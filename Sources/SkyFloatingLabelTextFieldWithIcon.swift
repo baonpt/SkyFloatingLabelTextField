@@ -12,344 +12,350 @@
 import UIKit
 
 /**
- Identify the type of icon. 
-    - font: Set your icon by setting the font of iconLabel
-    - image: Set your icon by setting the image of iconImageView
+ Identify the type of icon.
+ - font: Set your icon by setting the font of iconLabel
+ - image: Set your icon by setting the image of iconImageView
  */
 public enum IconType: Int {
-    case font
-    case image
+  case font
+  case image
 }
 
 /**
  A beautiful and flexible textfield implementation with support for icon, title label, error message and placeholder.
  */
 open class SkyFloatingLabelTextFieldWithIcon: SkyFloatingLabelTextField {
-
-    @IBInspectable
-    var iconTypeValue: Int {
-        get {
-            return self.iconType.rawValue
-        }
-
-        set(iconIndex) {
-            self.iconType = IconType(rawValue: iconIndex) ?? .font
-        }
+  
+  @IBInspectable
+  var iconTypeValue: Int {
+    get {
+      return self.iconType.rawValue
     }
-
-    open var iconType: IconType = .font {
-        didSet {
-            updateIconViewHiddenState()
-        }
+    
+    set(iconIndex) {
+      self.iconType = IconType(rawValue: iconIndex) ?? .font
     }
-
-    /// A UIImageView value that identifies the view used to display the icon
-    open var iconImageView: UIImageView!
-
-    /// A UIImage value that determines the image that the icon is using
-    @IBInspectable
-    dynamic open var iconImage: UIImage? {
-        didSet {
-            // Show a warning if setting an image while the iconType is IconType.font
-            if self.iconType == .font { NSLog("WARNING - Did set iconImage when the iconType is set to IconType.font. The image will not be displayed.") } // swiftlint:disable:this line_length
-            iconImageView?.image = iconImage
-        }
+  }
+  
+  open var iconType: IconType = .font {
+    didSet {
+      updateIconViewHiddenState()
     }
-
-    /// A Bool value that determines if the UIImage should be templated or not
-    @IBInspectable
-    dynamic open var templateImage: Bool = true {
-        didSet {
-            if templateImage {
-                   let templatedOriginalImage = self.iconImageView.image?
-                    .withRenderingMode(.alwaysTemplate)
-                    self.iconImageView.image = templatedOriginalImage
-            }
-        }
+  }
+  
+  /// A UIImageView value that identifies the view used to display the icon
+  open var iconImageView: UIImageView!
+  
+  /// A UIImage value that determines the image that the icon is using
+  @IBInspectable
+  dynamic open var iconImage: UIImage? {
+    didSet {
+      // Show a warning if setting an image while the iconType is IconType.font
+      if self.iconType == .font { NSLog("WARNING - Did set iconImage when the iconType is set to IconType.font. The image will not be displayed.") } // swiftlint:disable:this line_length
+      iconImageView?.image = iconImage
     }
-
-    /// A UILabel value that identifies the label used to display the icon
-    open var iconLabel: UILabel!
-
-    /// A UIFont value that determines the font that the icon is using
-    @objc dynamic open var iconFont: UIFont? {
-        didSet {
-            iconLabel?.font = iconFont
-        }
+  }
+  
+  /// A Bool value that determines if the UIImage should be templated or not
+  @IBInspectable
+  dynamic open var templateImage: Bool = true {
+    didSet {
+      if templateImage {
+        let templatedOriginalImage = self.iconImageView.image?
+          .withRenderingMode(.alwaysTemplate)
+        self.iconImageView.image = templatedOriginalImage
+      }
     }
-
-    /// A String value that determines the text used when displaying the icon
-    @IBInspectable
-    open var iconText: String? {
-        didSet {
-            // Show a warning if setting an icon text while the iconType is IconType.image
-            if self.iconType == .image { NSLog("WARNING - Did set iconText when the iconType is set to IconType.image. The icon with the specified text will not be displayed.") } // swiftlint:disable:this line_length
-            iconLabel?.text = iconText
-        }
+  }
+  
+  @IBInspectable var isLeftImage: Bool = true {
+    didSet {
+      updateFrame()
     }
-
-    /// A UIColor value that determines the color of the icon in the normal state
-    @IBInspectable
-    dynamic open var iconColor: UIColor = UIColor.gray {
-        didSet {
-            if self.iconType == .font {
-                updateIconLabelColor()
-            }
-            if self.iconType == .image && self.templateImage {
-                updateImageViewTintColor()
-            }
-        }
+  }
+  
+  /// A UILabel value that identifies the label used to display the icon
+  open var iconLabel: UILabel!
+  
+  /// A UIFont value that determines the font that the icon is using
+  @objc dynamic open var iconFont: UIFont? {
+    didSet {
+      iconLabel?.font = iconFont
     }
-
-    /// A UIColor value that determines the color of the icon when the control is selected
-    @IBInspectable
-    dynamic open var selectedIconColor: UIColor = UIColor.gray {
-        didSet {
-            updateIconLabelColor()
-        }
+  }
+  
+  /// A String value that determines the text used when displaying the icon
+  @IBInspectable
+  open var iconText: String? {
+    didSet {
+      // Show a warning if setting an icon text while the iconType is IconType.image
+      if self.iconType == .image { NSLog("WARNING - Did set iconText when the iconType is set to IconType.image. The icon with the specified text will not be displayed.") } // swiftlint:disable:this line_length
+      iconLabel?.text = iconText
     }
-
-    /// A float value that determines the width of the icon
-    @IBInspectable
-    dynamic open var iconWidth: CGFloat = 20 {
-        didSet {
-            updateFrame()
-        }
-    }
-
-    /**
-     A float value that determines the left margin of the icon. 
-     Use this value to position the icon more precisely horizontally.
-     */
-    @IBInspectable
-    dynamic open var iconMarginLeft: CGFloat = 4 {
-        didSet {
-            updateFrame()
-        }
-    }
-
-    /**
-     A float value that determines the bottom margin of the icon. 
-     Use this value to position the icon more precisely vertically.
-     */
-    @IBInspectable
-    dynamic open var iconMarginBottom: CGFloat = 4 {
-        didSet {
-            updateFrame()
-        }
-    }
-
-    /**
-     A float value that determines the rotation in degrees of the icon.
-     Use this value to rotate the icon in either direction.
-     */
-    @IBInspectable
-    open var iconRotationDegrees: Double = 0 {
-        didSet {
-            iconLabel.transform = CGAffineTransform(rotationAngle: CGFloat(iconRotationDegrees * .pi / 180.0))
-            iconImageView.transform = CGAffineTransform(rotationAngle: CGFloat(iconRotationDegrees * .pi / 180.0))
-        }
-    }
-
-    // MARK: Initializers
-
-    /**
-     Initializes the control
-     - parameter type the type of icon
-     */
-    convenience public init(frame: CGRect, iconType: IconType) {
-        self.init(frame: frame)
-        self.iconType = iconType
-        updateIconViewHiddenState()
-    }
-
-    /**
-    Initializes the control
-    - parameter frame the frame of the control
-    */
-    override public init(frame: CGRect) {
-        super.init(frame: frame)
-        createIcon()
-        updateIconViewHiddenState()
-    }
-
-    /**
-     Intialzies the control by deserializing it
-     - parameter aDecoder the object to deserialize the control from
-     */
-    required public init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        createIcon()
-        updateIconViewHiddenState()
-    }
-
-    // MARK: Creating the icon
-
-    /// Creates the both icon label and icon image view
-    fileprivate func createIcon() {
-        createIconLabel()
-        createIconImageView()
-    }
-
-    // MARK: Creating the icon label
-
-    /// Creates the icon label
-    fileprivate func createIconLabel() {
-        let iconLabel = UILabel()
-        iconLabel.backgroundColor = UIColor.clear
-        iconLabel.textAlignment = .center
-        iconLabel.autoresizingMask = [.flexibleTopMargin, .flexibleRightMargin]
-        self.iconLabel = iconLabel
-        addSubview(iconLabel)
+  }
+  
+  /// A UIColor value that determines the color of the icon in the normal state
+  @IBInspectable
+  dynamic open var iconColor: UIColor = UIColor.gray {
+    didSet {
+      if self.iconType == .font {
         updateIconLabelColor()
+      }
+      if self.iconType == .image && self.templateImage {
+        updateImageViewTintColor()
+      }
     }
-
-    // MARK: Creating the icon image view
-
-    /// Creates the icon image view
-    fileprivate func createIconImageView() {
-        let iconImageView = UIImageView()
-        iconImageView.backgroundColor = .clear
-        iconImageView.contentMode = .scaleAspectFit
-        iconImageView.autoresizingMask = [.flexibleTopMargin, .flexibleRightMargin]
-        self.iconImageView = iconImageView
-        self.templateImage = true
-        addSubview(iconImageView)
+  }
+  
+  /// A UIColor value that determines the color of the icon when the control is selected
+  @IBInspectable
+  dynamic open var selectedIconColor: UIColor = UIColor.gray {
+    didSet {
+      updateIconLabelColor()
     }
-
-    // MARK: Set icon hidden property
-
-    /// Shows the corresponding icon depending on iconType property
-    fileprivate func updateIconViewHiddenState() {
-        switch iconType {
-        case .font:
-            self.iconLabel.isHidden = false
-            self.iconImageView.isHidden = true
-        case .image:
-            self.iconLabel.isHidden = true
-            self.iconImageView.isHidden = false
-        }
+  }
+  
+  /// A float value that determines the width of the icon
+  @IBInspectable
+  dynamic open var iconWidth: CGFloat = 20 {
+    didSet {
+      updateFrame()
     }
-
-    // MARK: Handling the icon color
-
-    /// Update the colors for the control. Override to customize colors.
-    override open func updateColors() {
-        super.updateColors()
-        if self.iconType == .font {
-            updateIconLabelColor()
-        }
-        if self.iconType == .image && self.templateImage {
-            updateImageViewTintColor()
-        }
+  }
+  
+  /**
+   A float value that determines the left margin of the icon.
+   Use this value to position the icon more precisely horizontally.
+   */
+  @IBInspectable
+  dynamic open var iconMarginLeft: CGFloat = 4 {
+    didSet {
+      updateFrame()
     }
-
-    fileprivate func updateImageViewTintColor() {
-        if !isEnabled {
-            iconImageView.tintColor = disabledColor
-        } else if hasErrorMessage {
-            iconImageView.tintColor = errorColor
-        } else {
-            iconImageView.tintColor = editingOrSelected ? selectedIconColor : iconColor
-        }
+  }
+  
+  /**
+   A float value that determines the bottom margin of the icon.
+   Use this value to position the icon more precisely vertically.
+   */
+  @IBInspectable
+  dynamic open var iconMarginBottom: CGFloat = 4 {
+    didSet {
+      updateFrame()
     }
-
-    fileprivate func updateIconLabelColor() {
-        if !isEnabled {
-            iconLabel?.textColor = disabledColor
-        } else if hasErrorMessage {
-            iconLabel?.textColor = errorColor
-        } else {
-            iconLabel?.textColor = editingOrSelected ? selectedIconColor : iconColor
-        }
+  }
+  
+  /**
+   A float value that determines the rotation in degrees of the icon.
+   Use this value to rotate the icon in either direction.
+   */
+  @IBInspectable
+  open var iconRotationDegrees: Double = 0 {
+    didSet {
+      iconLabel.transform = CGAffineTransform(rotationAngle: CGFloat(iconRotationDegrees * .pi / 180.0))
+      iconImageView.transform = CGAffineTransform(rotationAngle: CGFloat(iconRotationDegrees * .pi / 180.0))
     }
-
-    // MARK: Custom layout overrides
-
-    /**
-     Calculate the bounds for the textfield component of the control.
-     Override to create a custom size textbox in the control.
-     - parameter bounds: The current bounds of the textfield component
-     - returns: The rectangle that the textfield component should render in
-    */
-    override open func textRect(forBounds bounds: CGRect) -> CGRect {
-        var rect = super.textRect(forBounds: bounds)
-        if isLTRLanguage {
-            rect.origin.x += CGFloat(iconWidth + iconMarginLeft)
-        } else {
-            rect.origin.x -= CGFloat(iconWidth + iconMarginLeft)
-        }
-        rect.size.width -= CGFloat(iconWidth + iconMarginLeft)
-        return rect
+  }
+  
+  // MARK: Initializers
+  
+  /**
+   Initializes the control
+   - parameter type the type of icon
+   */
+  convenience public init(frame: CGRect, iconType: IconType) {
+    self.init(frame: frame)
+    self.iconType = iconType
+    updateIconViewHiddenState()
+  }
+  
+  /**
+   Initializes the control
+   - parameter frame the frame of the control
+   */
+  override public init(frame: CGRect) {
+    super.init(frame: frame)
+    createIcon()
+    updateIconViewHiddenState()
+  }
+  
+  /**
+   Intialzies the control by deserializing it
+   - parameter aDecoder the object to deserialize the control from
+   */
+  required public init?(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
+    createIcon()
+    updateIconViewHiddenState()
+  }
+  
+  // MARK: Creating the icon
+  
+  /// Creates the both icon label and icon image view
+  fileprivate func createIcon() {
+    createIconLabel()
+    createIconImageView()
+  }
+  
+  // MARK: Creating the icon label
+  
+  /// Creates the icon label
+  fileprivate func createIconLabel() {
+    let iconLabel = UILabel()
+    iconLabel.backgroundColor = UIColor.clear
+    iconLabel.textAlignment = .center
+    iconLabel.autoresizingMask = [.flexibleTopMargin, .flexibleRightMargin]
+    self.iconLabel = iconLabel
+    addSubview(iconLabel)
+    updateIconLabelColor()
+  }
+  
+  // MARK: Creating the icon image view
+  
+  /// Creates the icon image view
+  fileprivate func createIconImageView() {
+    let iconImageView = UIImageView()
+    iconImageView.backgroundColor = .clear
+    iconImageView.contentMode = .scaleAspectFit
+    iconImageView.autoresizingMask = [.flexibleTopMargin, .flexibleRightMargin]
+    self.iconImageView = iconImageView
+    self.templateImage = true
+    addSubview(iconImageView)
+  }
+  
+  // MARK: Set icon hidden property
+  
+  /// Shows the corresponding icon depending on iconType property
+  fileprivate func updateIconViewHiddenState() {
+    switch iconType {
+    case .font:
+      self.iconLabel.isHidden = false
+      self.iconImageView.isHidden = true
+    case .image:
+      self.iconLabel.isHidden = true
+      self.iconImageView.isHidden = false
     }
-
-    /**
-     Calculate the rectangle for the textfield when it is being edited
-     - parameter bounds: The current bounds of the field
-     - returns: The rectangle that the textfield should render in
-     */
-    override open func editingRect(forBounds bounds: CGRect) -> CGRect {
-        var rect = super.editingRect(forBounds: bounds)
-        if isLTRLanguage {
-            rect.origin.x += CGFloat(iconWidth + iconMarginLeft)
-        } else {
-            // don't change the editing field X position for RTL languages
-        }
-        rect.size.width -= CGFloat(iconWidth + iconMarginLeft)
-        return rect
+  }
+  
+  // MARK: Handling the icon color
+  
+  /// Update the colors for the control. Override to customize colors.
+  override open func updateColors() {
+    super.updateColors()
+    if self.iconType == .font {
+      updateIconLabelColor()
     }
-
-    /**
-     Calculates the bounds for the placeholder component of the control. 
-     Override to create a custom size textbox in the control.
-     - parameter bounds: The current bounds of the placeholder component
-     - returns: The rectangle that the placeholder component should render in
-     */
-    override open func placeholderRect(forBounds bounds: CGRect) -> CGRect {
-        var rect = super.placeholderRect(forBounds: bounds)
-        if isLTRLanguage {
-            rect.origin.x += CGFloat(iconWidth + iconMarginLeft)
-        } else {
-            // don't change the editing field X position for RTL languages
-        }
-        rect.size.width -= CGFloat(iconWidth + iconMarginLeft)
-        return rect
+    if self.iconType == .image && self.templateImage {
+      updateImageViewTintColor()
     }
-
-    /// Invoked by layoutIfNeeded automatically
-    override open func layoutSubviews() {
-        super.layoutSubviews()
-        updateFrame()
+  }
+  
+  fileprivate func updateImageViewTintColor() {
+    if !isEnabled {
+      iconImageView.tintColor = disabledColor
+    } else if hasErrorMessage {
+      iconImageView.tintColor = errorColor
+    } else {
+      iconImageView.tintColor = editingOrSelected ? selectedIconColor : iconColor
     }
-
-    fileprivate func updateFrame() {
-        let textWidth: CGFloat = bounds.size.width
-        if isLTRLanguage {
-            iconLabel.frame = CGRect(
-                x: 0,
-                y: bounds.size.height - textHeight() - iconMarginBottom,
-                width: iconWidth,
-                height: textHeight()
-            )
-            iconImageView.frame = CGRect(
-                x: 0,
-                y: bounds.size.height - textHeight() - iconMarginBottom,
-                width: iconWidth,
-                height: textHeight()
-            )
-        } else {
-            iconLabel.frame = CGRect(
-                x: textWidth - iconWidth,
-                y: bounds.size.height - textHeight() - iconMarginBottom,
-                width: iconWidth,
-                height: textHeight()
-            )
-            iconImageView.frame = CGRect(
-                x: textWidth - iconWidth,
-                y: bounds.size.height - textHeight() - iconMarginBottom,
-                width: iconWidth,
-                height: textHeight()
-            )
-        }
+  }
+  
+  fileprivate func updateIconLabelColor() {
+    if !isEnabled {
+      iconLabel?.textColor = disabledColor
+    } else if hasErrorMessage {
+      iconLabel?.textColor = errorColor
+    } else {
+      iconLabel?.textColor = editingOrSelected ? selectedIconColor : iconColor
     }
+  }
+  
+  // MARK: Custom layout overrides
+  
+  /**
+   Calculate the bounds for the textfield component of the control.
+   Override to create a custom size textbox in the control.
+   - parameter bounds: The current bounds of the textfield component
+   - returns: The rectangle that the textfield component should render in
+   */
+  override open func textRect(forBounds bounds: CGRect) -> CGRect {
+    var rect = super.textRect(forBounds: bounds)
+    if isLeftImage {
+      rect.origin.x += CGFloat(iconWidth + iconMarginLeft + 10)
+    } else {
+      rect.origin.x -= CGFloat(iconWidth + iconMarginLeft)
+    }
+    rect.size.width -= CGFloat(iconWidth + iconMarginLeft)
+    return rect
+  }
+  
+  /**
+   Calculate the rectangle for the textfield when it is being edited
+   - parameter bounds: The current bounds of the field
+   - returns: The rectangle that the textfield should render in
+   */
+  override open func editingRect(forBounds bounds: CGRect) -> CGRect {
+    var rect = super.editingRect(forBounds: bounds)
+    if isLeftImage {
+      rect.origin.x += CGFloat(iconWidth + iconMarginLeft + 10)
+    } else {
+      // don't change the editing field X position for RTL languages
+    }
+    rect.size.width -= CGFloat(iconWidth + iconMarginLeft)
+    return rect
+  }
+  
+  /**
+   Calculates the bounds for the placeholder component of the control.
+   Override to create a custom size textbox in the control.
+   - parameter bounds: The current bounds of the placeholder component
+   - returns: The rectangle that the placeholder component should render in
+   */
+  override open func placeholderRect(forBounds bounds: CGRect) -> CGRect {
+    var rect = super.placeholderRect(forBounds: bounds)
+    if isLeftImage {
+      rect.origin.x += CGFloat(iconWidth + iconMarginLeft + 10)
+    } else {
+      // don't change the editing field X position for RTL languages
+    }
+    rect.size.width -= CGFloat(iconWidth + iconMarginLeft)
+    return rect
+  }
+  
+  /// Invoked by layoutIfNeeded automatically
+  override open func layoutSubviews() {
+    super.layoutSubviews()
+    updateFrame()
+  }
+  
+  fileprivate func updateFrame() {
+    let textWidth: CGFloat = bounds.size.width
+    if isLeftImage {
+      iconLabel.frame = CGRect(
+        x: 0,
+        y: bounds.size.height - textHeight() - iconMarginBottom,
+        width: iconWidth,
+        height: textHeight()
+      )
+      iconImageView.frame = CGRect(
+        x: 0,
+        y: (self.bounds.height - self.titleLabel.bounds.height)/2,
+        width: iconWidth,
+        height: iconWidth
+      )
+    } else {
+      iconLabel.frame = CGRect(
+        x: textWidth - iconWidth,
+        y: bounds.size.height - textHeight() - iconMarginBottom,
+        width: iconWidth,
+        height: textHeight()
+      )
+      iconImageView.frame = CGRect(
+        x: textWidth - iconWidth,
+        y: (self.bounds.height - self.titleLabel.bounds.height - 5)/2,
+        width: iconWidth,
+        height: iconWidth
+      )
+    }
+  }
 }
