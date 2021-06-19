@@ -283,7 +283,7 @@ open class SkyFloatingLabelTextFieldWithIcon: SkyFloatingLabelTextField {
     if isLeftImage {
       rect.origin.x += CGFloat(iconWidth + iconMarginLeft + 10)
     } else {
-      rect.origin.x -= CGFloat(iconWidth + iconMarginLeft)
+      rect.origin.x = 0
     }
     rect.size.width -= CGFloat(iconWidth + iconMarginLeft)
     return rect
